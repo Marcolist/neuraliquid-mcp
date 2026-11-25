@@ -1,0 +1,31 @@
+{
+  "manifest_version": "0.4",
+  "name": "neuraliquid-mcp",
+  "display_name": "NeuraLiquid Signals by FutureCast",
+  "description": "Check the live x402 offer, inspect feed freshness, and read an existing NeuraLiquid signal pass.",
+  "version": "1.0.1",
+  "author": {
+    "name": "FutureCast"
+  },
+  "homepage": "https://github.com/Marcolist/neuraliquid-mcp",
+  "server": {
+    "type": "uv",
+    "entry_point": "neuraliquid_mcp.py",
+    "mcp_config": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--directory",
+        "${__dirname}",
+        "neuraliquid_mcp.py"
+      ]
+    }
+  },
+  "keywords": [
+    "x402",
+    "crypto signals",
+    "watchlist",
+    "Base",
+    "USDC"
+  ]
+}

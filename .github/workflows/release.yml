@@ -1,0 +1,27 @@
+name: Publish tested MCP bundle
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: write
+concurrency: release-${{ github.ref }}
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - run: |
+          python3 -m venv "$RUNNER_TEMP/mcp-test"
+          "$RUNNER_TEMP/mcp-test/bin/pip" install .
+          "$RUNNER_TEMP/mcp-test/bin/python" -m unittest -q
+          python3 package_release.py "$GITHUB_REF_NAME"
+      - name: Publish one bundle per version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release create "$GITHUB_REF_NAME" dist/* --verify-tag --title "NeuraLiquid MCP $GITHUB_REF_NAME" --notes "Read-only MCP tools for the NeuraLiquid watchlist feed. Use the MCPB bundle with a uv-capable host. Setup and commercial terms are in the README."
+          fi

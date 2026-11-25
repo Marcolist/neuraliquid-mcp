@@ -3,6 +3,7 @@
 Connect an MCP-compatible watchlist or alert agent to a directional crypto feed. Inspect the live offer and check when the source last updated before deciding whether to buy. FutureCast operates this commercial API and publishes this adapter.
 
 ## Connect
+Download the [versioned MCP bundle](https://github.com/Marcolist/neuraliquid-mcp/releases/download/v1.0.1/neuraliquid.mcpb) for hosts supporting the MCPB uv runtime. Its dependencies install on first use.
 
 For a client supporting local stdio MCP servers and `uvx`, use this configuration. Git and Python 3.11 or later are required. The first launch installs the adapter and the Python MCP SDK.
 
@@ -11,7 +12,7 @@ For a client supporting local stdio MCP servers and `uvx`, use this configuratio
   "mcpServers": {
     "neuraliquid": {
       "command": "uvx",
-      "args": ["--from", "git+https://github.com/Marcolist/neuraliquid-mcp.git@v1.0.0", "neuraliquid-mcp"]
+      "args": ["--from", "git+https://github.com/Marcolist/neuraliquid-mcp.git@v1.0.1", "neuraliquid-mcp"]
     }
   }
 }
