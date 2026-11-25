@@ -29,3 +29,7 @@ Each observation contains the token symbol, UTC detection time and direction (lo
 ## Referrals
 
 A qualifying first purchase unlocks wallet registration for a personal link. Referral eligibility continues after the pass expires. A direct, eligible 5 USDC sale pays 1.70 USDC (34%) automatically after the incoming transfer becomes final. Operators can apply for one of three launch-partner slots covering referral registration. Partners disclose the commission when recommending the API. [Partner conditions and applications](https://futurecast.ml85.xyz/partners?utm_source=mcp).
+
+## Watchlist agent skill
+
+The [NeuraLiquid watchlist skill](skills/neuraliquid-watchlist/SKILL.md) explains how to inspect the offer for free and deduplicate alerts from an existing pass. Agents that support Agent Skills can use `npx skills add Marcolist/neuraliquid-mcp --skill neuraliquid-watchlist`. Operators can also open the [FutureCast quickstart](https://futurecast.ml85.xyz/quickstart?utm_source=watchlist-skill) directly.
