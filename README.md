@@ -3,7 +3,7 @@
 Connect an MCP-compatible watchlist or alert agent to a directional crypto feed. Inspect the live offer and check when the source last updated before deciding whether to buy. FutureCast operates this commercial API and publishes this adapter.
 
 ## Connect
-Download the [versioned MCP bundle](https://github.com/Marcolist/neuraliquid-mcp/releases/download/v1.1.0/neuraliquid.mcpb) for hosts supporting the MCPB uv runtime. Its dependencies install on first use.
+Download the [versioned MCP bundle](https://github.com/Marcolist/neuraliquid-mcp/releases/download/v1.2.0/neuraliquid.mcpb) for hosts supporting the MCPB uv runtime. Its dependencies install on first use.
 
 For a client supporting local stdio MCP servers and `uvx`, use this configuration. Git and Python 3.11 or later are required. The first launch installs the adapter and the Python MCP SDK.
 
@@ -12,7 +12,7 @@ For a client supporting local stdio MCP servers and `uvx`, use this configuratio
   "mcpServers": {
     "neuraliquid": {
       "command": "uvx",
-      "args": ["--from", "git+https://github.com/Marcolist/neuraliquid-mcp.git@v1.1.0", "neuraliquid-mcp"]
+      "args": ["--from", "git+https://github.com/Marcolist/neuraliquid-mcp.git@v1.2.0", "neuraliquid-mcp"]
     }
   }
 }
@@ -54,3 +54,13 @@ A qualifying first purchase unlocks wallet registration for a personal link. Ref
 ## Watchlist agent skill
 
 The [NeuraLiquid watchlist skill](skills/neuraliquid-watchlist/SKILL.md) explains how to inspect the offer for free and deduplicate alerts from an existing pass. Agents that support Agent Skills can use `npx skills add Marcolist/neuraliquid-mcp --skill neuraliquid-watchlist`. Operators can also open the [FutureCast quickstart](https://futurecast.ml85.xyz/quickstart?utm_source=watchlist-skill) directly.
+
+### Use a partner card or wait for availability
+
+Pass the public link copied from the card as `handoff_url` to `inspect_offer`. If your operator approves a day pass up to 5 USDC on Base, pass the same link to `buy_or_resume_pass`. A pending authorization keeps its original placement and referral code across retries. A saved pass is reused. Keep wallet credentials in the existing local secret store.
+
+For a free availability watch, call `start_event_watch(handoff_url=…)` and check `event_watch_status` every two minutes while the MCP server is running. On the first healthy, unexpired event with a day-pass offer, show the quote and returned public link to the operator. The watch ends within two hours and sends only unsigned requests. Closing the local MCP server ends its watch. For a scheduler, the installed command `neuraliquid-watch --handoff-url 'https://futurecast.ml85.xyz/preview'` runs the same watch as a standalone process, prints JSON and exits.
+
+For a one-day BTC/ETH comparison, record your existing alerts and call `read_btc_eth_watchlist` with an authorized pass. Retain the returned cursor, poll at least 30 seconds apart, upsert by event ID and revision, withdraw IDs listed in `withdraw`, and drop each alert at its expiry. On reset_required fetch a new snapshot and replace local state. Count distinct additional alerts alongside your existing feed over 24 hours. An empty set is a valid result.
+
+A Forge operator using its own x402 signer can make the unsigned offer request and signed retry with the same tagged URL. Keep the canonical payment resource from the offer. Store the returned access token privately and provide it as `NEURALIQUID_ACCESS_TOKEN` to use the BTC/ETH reader. This path keeps signing inside the operator's wallet and prevents paying for each poll.

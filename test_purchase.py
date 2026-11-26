@@ -72,3 +72,28 @@ class AgentShopping(unittest.IsolatedAsyncioTestCase):
                 await pay.buy_or_resume(client,self.path)
         self.assertFalse(self.path.exists())
         self.assertFalse(self.signed)
+
+    async def test_partner_link_survives_lost_response_and_changed_retry_link(self):
+        requests = []
+        code, source = 'partner1', 'card-one'
+        async def handler(request):
+            requests.append(dict(request.url.params))
+            response = await self.merchant(request)
+            response.headers.update({'X-FutureCast-Referral': code, 'X-FutureCast-Source': source})
+            return response
+        link = pay.ORIGIN + '/preview?ref=partner1&utm_source=card-one&via=watch'
+        async with httpx.AsyncClient(base_url=pay.ORIGIN, transport=httpx.MockTransport(handler)) as client:
+            with self.assertRaises(httpx.ReadTimeout):
+                await pay.buy_or_resume(client,self.path,link)
+            receipt = await pay.buy_or_resume(client,self.path,pay.ORIGIN + '/preview?ref=other&utm_source=card-two')
+        self.assertEqual(receipt['status'], 'confirmed')
+        self.assertEqual(requests,[{'ref':code,'utm_source':source,'via':'watch'}]*3)
+        self.assertEqual(len(set(self.signed)), 1)
+
+    async def test_unrecognized_partner_and_foreign_host_cannot_sign(self):
+        async with httpx.AsyncClient(base_url=pay.ORIGIN, transport=httpx.MockTransport(self.merchant)) as client:
+            for link in ['https://other.invalid/preview',pay.ORIGIN+'/preview?ref=unknown',pay.ORIGIN+'/preview?ref=x&ref=y']:
+                with self.assertRaises(ValueError):
+                    await pay.buy_or_resume(client,self.path,link)
+        self.assertFalse(self.signed)
+        self.assertFalse(self.path.exists())

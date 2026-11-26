@@ -11,7 +11,7 @@ class AdapterTests(unittest.IsolatedAsyncioTestCase):
         offer = {"resource": {"url": api.ORIGIN + api.FEED}, "accepts": [{"amount": "5000000"}]}
         with patch.object(api, "fetch", AsyncMock(return_value=httpx.Response(402, json=offer))) as fetch:
             self.assertEqual((await api.inspect_offer())["accepts"], offer["accepts"])
-            fetch.assert_awaited_once_with(api.FEED)
+            fetch.assert_awaited_once_with(api.FEED, params={"utm_source":"mcp"})
 
     async def test_no_pass_never_touches_network(self):
         with patch.dict(os.environ, {"NEURALIQUID_ACCESS_TOKEN": ""}), patch.object(api, "fetch", AsyncMock()) as fetch:

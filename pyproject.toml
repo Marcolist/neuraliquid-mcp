@@ -4,13 +4,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "neuraliquid-mcp"
-version = "1.1.0"
+version = "1.2.0"
 description = "Purchase or resume a budgeted NeuraLiquid pass and read versioned watchlist events"
 requires-python = ">=3.11"
 dependencies = ["mcp==1.30.0", "httpx==0.28.1", "x402[evm]==2.29.0", "eth-account==0.14.0"]
 
 [project.scripts]
 neuraliquid-mcp = "neuraliquid_mcp:main"
+neuraliquid-watch = "event_watch:main"
 
 [tool.setuptools]
-py-modules = ["neuraliquid_mcp", "agent_purchase"]
+py-modules = ["neuraliquid_mcp", "agent_purchase", "handoff", "event_watch"]

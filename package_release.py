@@ -14,7 +14,7 @@ output = Path("dist")
 output.mkdir(exist_ok=True)
 bundle = output / "neuraliquid.mcpb"
 with ZipFile(bundle, "w") as archive:
-    for name in ("manifest.json", "pyproject.toml", "neuraliquid_mcp.py", "agent_purchase.py", "README.md"):
+    for name in ("manifest.json", "pyproject.toml", "neuraliquid_mcp.py", "agent_purchase.py", "handoff.py", "event_watch.py", "README.md"):
         info = ZipInfo(name)
         info.compress_type = ZIP_DEFLATED
         info.external_attr = 0o100644 << 16

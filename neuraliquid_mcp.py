@@ -1,4 +1,7 @@
 """Agent tools for the NeuraLiquid watchlist feed."""
+import asyncio
+from datetime import datetime, timezone
+from urllib.parse import urlencode
 import os
 import re
 
@@ -8,8 +11,8 @@ from mcp.types import ToolAnnotations
 
 from agent_purchase import buy_or_resume, load_state, state_path
 
-ORIGIN = "https://futurecast.ml85.xyz"
-FEED = "/api/v1/x402/signals/patterns"
+from handoff import ORIGIN, FEED, public_tags, checkout_link
+from event_watch import run_watch
 server = FastMCP("NeuraLiquid Signals by FutureCast")
 READ_ONLY = ToolAnnotations(readOnlyHint=True, destructiveHint=False, idempotentHint=True, openWorldHint=True)
 
@@ -23,15 +26,16 @@ async def fetch(path: str, *, token: str | None = None, params=None) -> httpx.Re
 
 
 @server.tool(annotations=READ_ONLY)
-async def inspect_offer() -> dict:
+async def inspect_offer(handoff_url: str | None = None) -> dict:
     """Get today's x402 terms for a watchlist pass. Free, no wallet or signature."""
-    response = await fetch(FEED)
+    tags = public_tags(handoff_url)
+    response = await fetch(FEED, params=tags)
     if response.status_code != 402:
         raise ValueError(f"Offer unavailable (HTTP {response.status_code})")
     offer = response.json()
     return {"resource": offer["resource"], "accepts": offer["accepts"],
-            "quickstart": ORIGIN + "/quickstart?utm_source=mcp",
-            "partners": ORIGIN + "/partners?utm_source=mcp"}
+            "quickstart": checkout_link(tags),
+            "partners": ORIGIN + "/partners?" + urlencode(tags)}
 
 
 @server.tool(annotations=READ_ONLY)
@@ -64,14 +68,14 @@ def configured_token():
 
 
 @server.tool(annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=True, idempotentHint=True, openWorldHint=True))
-async def buy_or_resume_pass() -> dict:
+async def buy_or_resume_pass(handoff_url: str | None = None) -> dict:
     """Spend up to the operator's configured limit (at most 5 USDC) once for a day pass, or recover the same purchase."""
     if os.getenv("NEURALIQUID_ACCESS_TOKEN"):
         return {"status": "existing_pass_configured", "next_tool": "read_agent_events"}
     path = state_path()
     try:
         async with httpx.AsyncClient(base_url=ORIGIN, timeout=30, follow_redirects=False, trust_env=False) as http:
-            return await buy_or_resume(http, path)
+            return await buy_or_resume(http, path, handoff_url)
     except httpx.RequestError:
         return {"status": "connection_interrupted", "next_tool": "buy_or_resume_pass"}
     except Exception:
@@ -108,6 +112,52 @@ async def inspect_event_example() -> dict:
     response = await fetch("/api/v2/signals/example")
     response.raise_for_status()
     return response.json()
+
+
+_watch = None
+_watch_link = None
+
+
+@server.tool(annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, idempotentHint=True, openWorldHint=True))
+async def start_event_watch(handoff_url: str | None = None) -> dict:
+    """Start one local two-hour availability watch. Only unsigned GETs. Keep MCP running and poll event_watch_status."""
+    global _watch, _watch_link
+    public_tags(handoff_url)
+    if _watch is not None and not _watch.done():
+        if _watch_link != handoff_url:
+            raise ValueError("Another watch is running. Read its status before starting another.")
+    else:
+        _watch_link = handoff_url
+        _watch = asyncio.create_task(run_watch(handoff_url))
+    return await event_watch_status()
+
+
+@server.tool(annotations=READ_ONLY)
+async def event_watch_status() -> dict:
+    """Read the current local watch's unsigned quote, timeout or polling interval."""
+    if _watch is None:
+        return {"status": "not_started"}
+    if not _watch.done():
+        return {"status": "watching", "poll_after_seconds": 120}
+    return _watch.result()
+
+
+@server.tool(annotations=READ_ONLY)
+async def read_btc_eth_watchlist(cursor: str | None = None) -> dict:
+    """Use an existing pass. Return BTC/ETH live alert revisions and IDs to withdraw on conflict or expiry."""
+    page = await read_agent_events(cursor)
+    if "events" not in page:
+        return page
+    now = datetime.now(timezone.utc)
+    alerts, withdraw = [], []
+    for event in page["events"]:
+        if event["symbol"] not in ("BTC", "ETH"):
+            continue
+        if event["direction_status"] not in ("long", "short") or datetime.fromisoformat(event["expires_at"]) <= now:
+            withdraw.append(event["event_id"])
+        else:
+            alerts.append({k: event[k] for k in ("event_id", "revision", "symbol", "direction_status", "observed_at", "expires_at")})
+    return {"mode": page["mode"], "next_cursor": page["next_cursor"], "alerts": alerts, "withdraw": withdraw}
 
 
 def main():
