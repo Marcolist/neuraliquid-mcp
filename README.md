@@ -20,9 +20,19 @@ For a client supporting local stdio MCP servers and `uvx`, use this configuratio
 
 Ask your agent to run `feed_status` and `inspect_offer`. Neither tool requires a wallet. HTTP 402 on the unsigned offer is expected. Both tools perform unsigned GET requests to the FutureCast API.
 
+## Preview a watchlist before you buy
+
+Try this prompt in a connected MCP client:
+
+> Call `feed_status`, `inspect_event_example` and `inspect_offer`. Show the latest source timestamp, what my watchlist would display for the expired conflict example, and the quoted day-pass price. Use read-only tools.
+
+Check the [current source timestamp, monitored tokens and number of observations in the snapshot](https://futurecast.ml85.xyz/api/v1/signals/availability). Review two expired observations with reference prices, 15- and 60-minute outcomes, and the rules used to select them. Both were chosen retrospectively for favorable moves. [Historical cases and methodology](https://futurecast.ml85.xyz/performance?utm_source=mcp).
+
+Run the [alert adapter](https://futurecast.ml85.xyz/agent/watchlist-preview.mjs) locally with Node.js 18 or later. Its default preview uses public historical data. Existing feed users can pipe new observations into it and opt in to posting to their own Telegram or Discord channel. [Alert setup](https://futurecast.ml85.xyz/quickstart?utm_source=mcp).
+
 ## Use an existing pass
 
-A 5 USDC payment on Base through x402 buys 24 hours of repeated reads from finalized confirmation. The agent can purchase with a separately provisioned budget. To use a valid pass, set `NEURALIQUID_ACCESS_TOKEN` in the local MCP server environment through your client's secret management. Then call `read_existing_pass`. This tool reads the token locally and sends it only to the fixed FutureCast HTTPS endpoint, without following redirects. Keep wallet keys and pass tokens out of prompts and shared client configuration.
+The day pass costs 5 USDC for 24 hours from finalized confirmation. The browser and direct x402 checkout also offer 7 days for 29 USDC and 30 days for 99 USDC, each as a one-time purchase. This MCP release buys the day pass and reads existing x402 passes of any supported duration. [Current pass catalog](https://futurecast.ml85.xyz/api/v1/base/payment-option). The agent can purchase with a separately provisioned budget. To use a valid pass, set `NEURALIQUID_ACCESS_TOKEN` in the local MCP server environment through your client's secret management. Then call `read_existing_pass`. This tool reads the token locally and sends it only to the fixed FutureCast HTTPS endpoint, without following redirects. Keep wallet keys and pass tokens out of prompts and shared client configuration.
 
 In the original view, each observation contains the token symbol, UTC detection time and direction (long or short). Use the time to discard older observations and the three fields together to deduplicate alerts. Data comes from a paper-trading engine observing public markets. A healthy feed may be empty. A pass provides observations, with no promise of profit. [Inspect access and integration details](https://futurecast.ml85.xyz/quickstart?utm_source=mcp).
 
@@ -39,7 +49,7 @@ Never put wallet keys, signatures or bearer tokens in tool calls or prompts. Cal
 
 ## Referrals
 
-A qualifying first purchase unlocks wallet registration for a personal link. Referral eligibility continues after the pass expires. A direct, eligible 5 USDC sale pays 1.70 USDC (34%) automatically after the incoming transfer becomes final. Operators can apply for one of three launch-partner slots covering referral registration. Partners disclose the commission when recommending the API. [Partner conditions and applications](https://futurecast.ml85.xyz/partners?utm_source=mcp).
+A qualifying first purchase unlocks wallet registration for a personal link. Referral eligibility continues after the pass expires. An eligible direct sale earns 34% of the pass price. The day, week and 30-day passes pay 1.70, 9.86 and 33.66 USDC respectively, automatically after the incoming transfer becomes final. Operators can apply for one of three launch-partner slots covering referral registration. Partners disclose the commission when recommending the API. [Partner conditions and applications](https://futurecast.ml85.xyz/partners?utm_source=mcp).
 
 ## Watchlist agent skill
 
