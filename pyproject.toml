@@ -4,13 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "neuraliquid-mcp"
-version = "1.0.1"
-description = "Inspect the NeuraLiquid x402 offer and read a previously purchased signal pass"
+version = "1.1.0"
+description = "Purchase or resume a budgeted NeuraLiquid pass and read versioned watchlist events"
 requires-python = ">=3.11"
-dependencies = ["mcp==1.30.0", "httpx==0.28.1"]
+dependencies = ["mcp==1.30.0", "httpx==0.28.1", "x402[evm]==2.29.0", "eth-account==0.14.0"]
 
 [project.scripts]
 neuraliquid-mcp = "neuraliquid_mcp:main"
 
 [tool.setuptools]
-py-modules = ["neuraliquid_mcp"]
+py-modules = ["neuraliquid_mcp", "agent_purchase"]

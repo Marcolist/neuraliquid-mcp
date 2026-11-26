@@ -14,7 +14,7 @@ output = Path("dist")
 output.mkdir(exist_ok=True)
 bundle = output / "neuraliquid.mcpb"
 with ZipFile(bundle, "w") as archive:
-    for name in ("manifest.json", "pyproject.toml", "neuraliquid_mcp.py", "README.md"):
+    for name in ("manifest.json", "pyproject.toml", "neuraliquid_mcp.py", "agent_purchase.py", "README.md"):
         info = ZipInfo(name)
         info.compress_type = ZIP_DEFLATED
         info.external_attr = 0o100644 << 16
@@ -24,6 +24,6 @@ package = {"registryType": "mcpb", "identifier": f"{repository}/releases/downloa
            "fileSha256": sha256(bundle.read_bytes()).hexdigest(), "transport": {"type": "stdio"}}
 metadata = {"$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
             "name": "io.github.Marcolist/neuraliquid-mcp", "title": "NeuraLiquid Signals by FutureCast",
-            "description": "Inspect an x402 watchlist offer, check feed freshness and read an existing crypto signal pass.",
+            "description": "Buy a budgeted x402 pass and read fresh, versioned watchlist events.",
             "version": version, "repository": {"url": repository, "source": "github"}, "packages": [package]}
 (output / "server.json").write_text(json.dumps(metadata, indent=2) + "\n")

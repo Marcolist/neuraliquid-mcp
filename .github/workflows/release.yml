@@ -23,5 +23,5 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           if ! gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
-            gh release create "$GITHUB_REF_NAME" dist/* --verify-tag --title "NeuraLiquid MCP $GITHUB_REF_NAME" --notes "Read-only MCP tools for the NeuraLiquid watchlist feed. Use the MCPB bundle with a uv-capable host. Setup and commercial terms are in the README."
+            gh release create "$GITHUB_REF_NAME" dist/* --verify-tag --title "NeuraLiquid MCP $GITHUB_REF_NAME" --notes "Budgeted x402 purchase, recovery and versioned watchlist tools. Use the MCPB bundle with a uv-capable host. Setup and commercial terms are in the README."
           fi
