@@ -3,7 +3,7 @@
 Connect an MCP-compatible watchlist or alert agent to a directional crypto feed. Inspect the live offer and check when the source last updated before deciding whether to buy. FutureCast operates this commercial API and publishes this adapter.
 
 ## Connect
-Download the [versioned MCP bundle](https://github.com/Marcolist/neuraliquid-mcp/releases/download/v1.2.0/neuraliquid.mcpb) for hosts supporting the MCPB uv runtime. Its dependencies install on first use.
+Download the [versioned MCP bundle](https://github.com/Marcolist/neuraliquid-mcp/releases/download/v1.3.0/neuraliquid.mcpb) for hosts supporting the MCPB uv runtime. Its dependencies install on first use.
 
 For a client supporting local stdio MCP servers and `uvx`, use this configuration. Git and Python 3.11 or later are required. The first launch installs the adapter and the Python MCP SDK.
 
@@ -12,7 +12,7 @@ For a client supporting local stdio MCP servers and `uvx`, use this configuratio
   "mcpServers": {
     "neuraliquid": {
       "command": "uvx",
-      "args": ["--from", "git+https://github.com/Marcolist/neuraliquid-mcp.git@v1.2.0", "neuraliquid-mcp"]
+      "args": ["--from", "git+https://github.com/Marcolist/neuraliquid-mcp.git@v1.3.0", "neuraliquid-mcp"]
     }
   }
 }
@@ -38,7 +38,9 @@ In the original view, each observation contains the token symbol, UTC detection 
 
 ## Agent purchase and event feed
 
-Call `inspect_event_example` to see a free historical conflict, then `feed_status` and `inspect_offer`. An agent with an existing x402 bearer can immediately call `read_agent_events`. For one budgeted purchase, provision a dedicated Base EOA and the following environment settings on the **local MCP host**:
+Call `inspect_event_example` to see a free historical conflict, then `feed_status` and `inspect_offer`. An agent with an existing x402 bearer can immediately call `read_agent_events`. Run `check_purchase_readiness()` for a free local check of the pass, purchase settings, budget and signer configuration. If your agent signs x402 requests in its own wallet, use `check_purchase_readiness(wallet_mode="external_x402")`. This check never signs, contacts an RPC or returns wallet secrets. Your wallet remains responsible for confirming funds, permissions and the live price.
+
+For one budgeted purchase, provision a dedicated Base EOA and the following environment settings on the **local MCP host**:
 
 - `NEURALIQUID_ENABLE_PURCHASE=1`
 - `NEURALIQUID_MAX_USDC=5` (positive maximum for one pass, hard ceiling 5 USDC)
@@ -59,7 +61,7 @@ The [NeuraLiquid watchlist skill](skills/neuraliquid-watchlist/SKILL.md) explain
 
 Pass the public link copied from the card as `handoff_url` to `inspect_offer`. If your operator approves a day pass up to 5 USDC on Base, pass the same link to `buy_or_resume_pass`. A pending authorization keeps its original placement and referral code across retries. A saved pass is reused. Keep wallet credentials in the existing local secret store.
 
-For a free availability watch, call `start_event_watch(handoff_url=…)` and check `event_watch_status` every two minutes while the MCP server is running. On the first healthy, unexpired event with a day-pass offer, show the quote and returned public link to the operator. The watch ends within two hours and sends only unsigned requests. Closing the local MCP server ends its watch. For a scheduler, the installed command `neuraliquid-watch --handoff-url 'https://futurecast.ml85.xyz/preview'` runs the same watch as a standalone process, prints JSON and exits.
+For a free BTC/ETH availability watch, call `start_event_watch(markets="btc_eth", handoff_url=…)` and check `event_watch_status` every two minutes while the MCP server is running. On the first healthy snapshot with an unexpired, unconflicted BTC or ETH event and a day-pass offer, show the quote and returned public link to the operator. The watch ends within two hours and sends only unsigned requests. Closing the local MCP server ends its watch. For a scheduler, the installed command `neuraliquid-watch --markets btc_eth --handoff-url 'https://futurecast.ml85.xyz/preview'` runs the same watch as a standalone process, prints JSON and exits. Omit the markets option for the original all-market watch. Availability can change between the check and a paid read.
 
 For a one-day BTC/ETH comparison, record your existing alerts and call `read_btc_eth_watchlist` with an authorized pass. Retain the returned cursor, poll at least 30 seconds apart, upsert by event ID and revision, withdraw IDs listed in `withdraw`, and drop each alert at its expiry. On reset_required fetch a new snapshot and replace local state. Count distinct additional alerts alongside your existing feed over 24 hours. An empty set is a valid result.
 

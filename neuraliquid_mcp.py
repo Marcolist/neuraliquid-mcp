@@ -2,6 +2,7 @@
 import asyncio
 from datetime import datetime, timezone
 from urllib.parse import urlencode
+from typing import Literal
 import os
 import re
 
@@ -9,10 +10,10 @@ import httpx
 from mcp.server.fastmcp import FastMCP
 from mcp.types import ToolAnnotations
 
-from agent_purchase import buy_or_resume, load_state, state_path
+from agent_purchase import buy_or_resume, load_state, purchase_readiness, state_path
 
 from handoff import ORIGIN, FEED, public_tags, checkout_link
-from event_watch import run_watch
+from event_watch import WatchMarkets, run_watch, validate_markets
 server = FastMCP("NeuraLiquid Signals by FutureCast")
 READ_ONLY = ToolAnnotations(readOnlyHint=True, destructiveHint=False, idempotentHint=True, openWorldHint=True)
 
@@ -67,6 +68,12 @@ def configured_token():
     return token
 
 
+@server.tool(annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, idempotentHint=True, openWorldHint=False))
+def check_purchase_readiness(wallet_mode: Literal["local", "external_x402"] = "local") -> dict:
+    """Check pass, wallet configuration and budget locally, without network, signing or spending. Wallet funds, pass validity and external policies are unverified."""
+    return purchase_readiness(wallet_mode)
+
+
 @server.tool(annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=True, idempotentHint=True, openWorldHint=True))
 async def buy_or_resume_pass(handoff_url: str | None = None) -> dict:
     """Spend up to the operator's configured limit (at most 5 USDC) once for a day pass, or recover the same purchase."""
@@ -80,7 +87,7 @@ async def buy_or_resume_pass(handoff_url: str | None = None) -> dict:
         return {"status": "connection_interrupted", "next_tool": "buy_or_resume_pass"}
     except Exception:
         # Never pass backend, SDK or JSON parsing exceptions (possibly containing credentials) to an LLM.
-        raise ValueError("Check local wallet, budget, state permissions and offer. Keep the existing pass file for retry.") from None
+        raise ValueError("Run check_purchase_readiness and inspect_offer. Keep the existing pass file for retry.") from None
 
 
 @server.tool(annotations=READ_ONLY)
@@ -115,20 +122,21 @@ async def inspect_event_example() -> dict:
 
 
 _watch = None
-_watch_link = None
+_watch_settings = None
 
 
 @server.tool(annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, idempotentHint=True, openWorldHint=True))
-async def start_event_watch(handoff_url: str | None = None) -> dict:
-    """Start one local two-hour availability watch. Only unsigned GETs. Keep MCP running and poll event_watch_status."""
-    global _watch, _watch_link
+async def start_event_watch(handoff_url: str | None = None, markets: WatchMarkets = "all") -> dict:
+    """Wait for a directional event anywhere (all) or on BTC or ETH (btc_eth). Only unsigned GETs. Keep MCP running and poll event_watch_status for up to two hours."""
+    global _watch, _watch_settings
     public_tags(handoff_url)
+    validate_markets(markets)
     if _watch is not None and not _watch.done():
-        if _watch_link != handoff_url:
-            raise ValueError("Another watch is running. Read its status before starting another.")
+        if _watch_settings != (handoff_url, markets):
+            raise ValueError("A watch with different markets or attribution is already running.")
     else:
-        _watch_link = handoff_url
-        _watch = asyncio.create_task(run_watch(handoff_url))
+        _watch_settings = (handoff_url, markets)
+        _watch = asyncio.create_task(run_watch(handoff_url, markets=markets))
     return await event_watch_status()
 
 
@@ -138,7 +146,7 @@ async def event_watch_status() -> dict:
     if _watch is None:
         return {"status": "not_started"}
     if not _watch.done():
-        return {"status": "watching", "poll_after_seconds": 120}
+        return {"status": "watching", "markets": _watch_settings[1], "poll_after_seconds": 120}
     return _watch.result()
 
 
