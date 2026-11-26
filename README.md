@@ -3,7 +3,7 @@
 Connect an MCP-compatible watchlist or alert agent to a directional crypto feed. Inspect the live offer and check when the source last updated before deciding whether to buy. FutureCast operates this commercial API and publishes this adapter.
 
 ## Connect
-Download the [versioned MCP bundle](https://github.com/Marcolist/neuraliquid-mcp/releases/download/v1.3.0/neuraliquid.mcpb) for hosts supporting the MCPB uv runtime. Its dependencies install on first use.
+Download the [versioned MCP bundle](https://github.com/Marcolist/neuraliquid-mcp/releases/download/v1.3.1/neuraliquid.mcpb) for hosts supporting the MCPB uv runtime. Its dependencies install on first use.
 
 For a client supporting local stdio MCP servers and `uvx`, use this configuration. Git and Python 3.11 or later are required. The first launch installs the adapter and the Python MCP SDK.
 
@@ -12,7 +12,7 @@ For a client supporting local stdio MCP servers and `uvx`, use this configuratio
   "mcpServers": {
     "neuraliquid": {
       "command": "uvx",
-      "args": ["--from", "git+https://github.com/Marcolist/neuraliquid-mcp.git@v1.3.0", "neuraliquid-mcp"]
+      "args": ["--from", "git+https://github.com/Marcolist/neuraliquid-mcp.git@v1.3.1", "neuraliquid-mcp"]
     }
   }
 }
@@ -51,7 +51,7 @@ Never put wallet keys, signatures or bearer tokens in tool calls or prompts. Cal
 
 ## Referrals
 
-A qualifying first purchase unlocks wallet registration for a personal link. Referral eligibility continues after the pass expires. An eligible direct sale earns 34% of the pass price. The day, week and 30-day passes pay 1.70, 9.86 and 33.66 USDC respectively, automatically after the incoming transfer becomes final. Operators can apply for one of three launch-partner slots covering referral registration. Partners disclose the commission when recommending the API. [Partner conditions and applications](https://futurecast.ml85.xyz/partners?utm_source=mcp).
+Open registration runs from 26 November 2026 at 22:00 UTC until 26 December 2026 at 22:00 UTC. A wallet signature creates a personal referral link with no purchase. A link registered during the window remains eligible afterward. New wallets can subsequently qualify through a confirmed purchase or a partner invitation. Reading the live feed requires a paid pass. An eligible direct sale earns 34% of the pass price. The day, week and 30-day passes pay 1.70, 9.86 and 33.66 USDC respectively, automatically after the incoming transfer becomes final. Three launch-partner slots offer help integrating the preview and referral card. Partners disclose the commission when recommending the API. [Partner conditions and applications](https://futurecast.ml85.xyz/partners?utm_source=mcp).
 
 ## Watchlist agent skill
 
