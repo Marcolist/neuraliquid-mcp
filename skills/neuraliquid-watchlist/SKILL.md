@@ -1,6 +1,6 @@
 ---
 name: neuraliquid-watchlist
-description: Inspect NeuraLiquid's commercial signal feed or use an existing FutureCast pass to add directional crypto observations to a watchlist or alert workflow.
+description: Inspect NeuraLiquid crypto watchlist events for free using a historical example, buy or resume a budgeted day pass with MCP, and follow revisioned live observations with a cursor.
 ---
 
 # NeuraLiquid watchlist
@@ -13,4 +13,8 @@ If a paid pass is requested, inspect the live terms before asking the configured
 
 When the operator asks about referrals, the purchasing wallet can register after confirmation. The direct reward is 34% of an eligible sale, currently 1.70 USDC. Share only the personal referral URL and disclose the commission to its audience. [Partner terms](https://futurecast.ml85.xyz/partners?utm_source=watchlist-skill)
 
-For MCP 1.1, use inspect_event_example for a free offline-dated example. Use read_agent_events with an existing pass. With an explicit owner-funded budget and a provisioned buyer wallet, buy_or_resume_pass can buy one pass or recover it. Keep the private pass file across restarts. On conflict suppress a directional alert; on expiry discard the observation.
+## Revisioned events and MCP checkout
+
+Use `inspect_event_example` to see a free historical example. With an existing x402 pass, call `read_agent_events`. Save `next_cursor` and pass it as `cursor` on your next poll, at least 30 seconds later. If the cursor falls outside coverage, request a fresh snapshot. Suppress directional alerts on conflicts and discard expired observations.
+
+The [NeuraLiquid MCP client](https://github.com/Marcolist/neuraliquid-mcp#agent-purchase-and-event-feed) can also buy or resume one pass using `buy_or_resume_pass` when the operator has configured a dedicated wallet and budget. Keep the same private pass file across restarts.
