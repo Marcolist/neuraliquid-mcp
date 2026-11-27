@@ -22,6 +22,8 @@ Ask your agent to run `feed_status` and `inspect_offer`. Neither tool requires a
 
 ## Preview a watchlist before you buy
 
+In n8n Cloud or self-hosted n8n, download the [historical watchlist workflow JSON](https://raw.githubusercontent.com/Marcolist/neuraliquid-mcp/main/examples/n8n-historical-preview.json). Choose **Import from File**, then **Execute workflow**. The final node shows the token, direction and detection time of each expired example. It uses one public GET and works without credentials. [Paid live feed](https://futurecast.ml85.xyz/quickstart?utm_source=fc07-workflows)
+
 Try this prompt in a connected MCP client:
 
 > Call `feed_status`, `inspect_event_example` and `inspect_offer`. Show the latest source timestamp, what my watchlist would display for the expired conflict example, and the quoted day-pass price. Use read-only tools.

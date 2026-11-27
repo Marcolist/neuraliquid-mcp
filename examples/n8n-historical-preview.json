@@ -1,0 +1,131 @@
+{
+  "name": "NeuraLiquid historical watchlist preview",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "33ba074e-9228-566b-be7e-44e382fe8917",
+      "name": "Start preview manually",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "notes": "Run this workflow manually to inspect expired examples. The paid live feed is available separately at https://futurecast.ml85.xyz/quickstart?utm_source=fc07-workflows."
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://futurecast.ml85.xyz/api/v1/signals/case-studies?utm_source=fc07-workflows",
+        "options": {}
+      },
+      "id": "17312fe2-ec60-5723-9de4-6edbf9cd3b5f",
+      "name": "Fetch expired watchlist cases",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "feed_cases",
+        "include": "noOtherFields",
+        "options": {
+          "destinationFieldName": "observation"
+        }
+      },
+      "id": "9df9ebeb-c021-5b45-93c2-0b84ea866db9",
+      "name": "One item per case",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        480,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2ab8a4f9-025a-520f-9b82-c6099708fde3",
+              "name": "status",
+              "value": "Expired historical example",
+              "type": "string"
+            },
+            {
+              "id": "ee3615b0-27e5-5f30-987f-a5a55389775d",
+              "name": "token",
+              "value": "={{ $json.observation.signal.token }}",
+              "type": "string"
+            },
+            {
+              "id": "7d65ee02-b58e-516e-9542-fe9f91b62e56",
+              "name": "direction",
+              "value": "={{ $json.observation.signal.direction }}",
+              "type": "string"
+            },
+            {
+              "id": "a92a4d1c-5e79-53e9-86b5-e75c40e821f7",
+              "name": "time",
+              "value": "={{ $json.observation.signal.time }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      },
+      "id": "c5edfbcf-9bc2-538d-bfe7-3c9c0afd5af2",
+      "name": "Historical watchlist preview",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        720,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Start preview manually": {
+      "main": [
+        [
+          {
+            "node": "Fetch expired watchlist cases",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch expired watchlist cases": {
+      "main": [
+        [
+          {
+            "node": "One item per case",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "One item per case": {
+      "main": [
+        [
+          {
+            "node": "Historical watchlist preview",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
