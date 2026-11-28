@@ -73,6 +73,18 @@
               "name": "time",
               "value": "={{ $json.observation.signal.time }}",
               "type": "string"
+            },
+            {
+              "id": "156c9527-7c70-50fb-bbc7-220abeedcb41",
+              "name": "pilot_terms",
+              "value": "Optional live pilot: 5 USDC on Base for 24 hours. Review the offer and approve the spend in your wallet to start.",
+              "type": "string"
+            },
+            {
+              "id": "67d70bcc-edbf-5eab-a85f-e29023ce6403",
+              "name": "pilot_offer_url",
+              "value": "https://futurecast.ml85.xyz/quickstart?utm_source=fc07-workflows#wallet",
+              "type": "string"
             }
           ]
         },

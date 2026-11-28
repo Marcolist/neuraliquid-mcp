@@ -22,7 +22,7 @@ Ask your agent to run `feed_status` and `inspect_offer`. Neither tool requires a
 
 ## Preview a watchlist before you buy
 
-In n8n Cloud or self-hosted n8n, download the [historical watchlist workflow JSON](https://raw.githubusercontent.com/Marcolist/neuraliquid-mcp/main/examples/n8n-historical-preview.json). Choose **Import from File**, then **Execute workflow**. The final node shows the token, direction and detection time of each expired example. It uses one public GET and works without credentials. [Paid live feed](https://futurecast.ml85.xyz/quickstart?utm_source=fc07-workflows)
+In n8n Cloud or self-hosted n8n, download the [historical watchlist workflow JSON](https://raw.githubusercontent.com/Marcolist/neuraliquid-mcp/main/examples/n8n-historical-preview.json). Choose **Import from File**, then **Execute workflow**. The final node shows each expired example’s token, direction and detection time, plus the optional day-pass terms and `pilot_offer_url`. The workflow uses one public GET and requires no credentials. If you want 24 hours of live observations, open the returned URL to review the 5 USDC Base pass and approve it in your wallet. [Day-pass details](https://futurecast.ml85.xyz/quickstart?utm_source=fc07-workflows#wallet)
 
 Try this prompt in a connected MCP client:
 
