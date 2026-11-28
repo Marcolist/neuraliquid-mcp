@@ -65,6 +65,50 @@ class WalletReadiness(unittest.TestCase):
         os.environ["NEURALIQUID_ACCESS_TOKEN"] = "invalid"
         self.assertEqual(check_purchase_readiness()["status"], "invalid_pass_config")
 
+    def test_snapshot_budget_and_signer_without_day_pass(self):
+        def check():
+            return check_purchase_readiness(product="btc_eth_snapshot")
+
+        self.assertEqual(set(check()["blockers"]), {"snapshot_file_missing", "operator_opt_in_missing",
+                                                   "budget_missing_or_invalid", "local_signer_missing"})
+        external = check_purchase_readiness("external_x402", product="btc_eth_snapshot")
+        self.assertEqual(external["next_tool"], "inspect_btc_eth_snapshot")
+        self.assertIn("0.05 USDC", external["action"])
+        key = Account.create().key.hex()
+        signer = self.directory / "signer"
+        signer.write_text(key)
+        signer.chmod(0o600)
+        path = self.directory / "snapshot"
+        os.environ.update(NEURALIQUID_BUYER_KEY_FILE=str(signer), NEURALIQUID_ENABLE_PURCHASE="1",
+                          NEURALIQUID_SNAPSHOT_FILE=str(path), NEURALIQUID_MAX_USDC="0.049")
+        self.assertEqual(check()["blockers"], ["budget_below_snapshot_price"])
+        os.environ["NEURALIQUID_MAX_USDC"] = "0.05"
+        result = check()
+        self.assertEqual((result["status"], result["next_tool"]), ("local_setup_ready", "inspect_btc_eth_snapshot"))
+        self.assertNotIn(key, json.dumps(result))
+        self.assertFalse(path.exists())
+        signer.chmod(0o644)
+        self.assertEqual(check()["blockers"], ["local_signer_unusable"])
+
+    def test_snapshot_recovery_is_product_specific_and_private(self):
+        path = self.directory / "snapshot"
+        path.touch(mode=0o600)
+        os.environ.update(NEURALIQUID_SNAPSHOT_FILE=str(path), NEURALIQUID_ACCESS_TOKEN="a" * 64)
+        for fields, status in (({"authorization": "saved-secret"}, "saved_authorization"),
+                               ({"token": "c" * 64, "status_path": "/api/v1/x402/payments/one"}, "saved_snapshot_configured")):
+            content = json.dumps({"resource": pay.SNAPSHOT, **fields})
+            path.write_text(content)
+            result = check_purchase_readiness(product="btc_eth_snapshot")
+            self.assertEqual((result["status"], result["next_tool"]), (status, "buy_or_resume_btc_eth_snapshot"))
+            self.assertEqual(path.read_text(), content)
+            for private in ("saved-secret", "c" * 64, "a" * 64):
+                self.assertNotIn(private, json.dumps(result))
+        path.write_text(json.dumps({"authorization": "legacy-pass-state"}))
+        self.assertEqual(check_purchase_readiness(product="btc_eth_snapshot")["status"], "snapshot_state_unusable")
+        path.unlink()
+        os.environ["NEURALIQUID_PASS_FILE"] = str(path)
+        self.assertEqual(check_purchase_readiness(product="btc_eth_snapshot")["status"], "snapshot_state_unusable")
+
     def test_state_recovery_precedes_any_new_purchase_route(self):
         path = self.directory / "pass"
         os.environ["NEURALIQUID_PASS_FILE"] = str(path)

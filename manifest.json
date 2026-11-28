@@ -2,8 +2,8 @@
   "manifest_version": "0.4",
   "name": "neuraliquid-mcp",
   "display_name": "NeuraLiquid Signals by FutureCast",
-  "description": "Inspect, buy or resume a budget-limited agent pass and read watchlist events.",
-  "version": "1.3.1",
+  "description": "Inspect or purchase one BTC/ETH snapshot or a day pass with a local wallet and budget.",
+  "version": "1.4.0",
   "author": {
     "name": "FutureCast"
   },

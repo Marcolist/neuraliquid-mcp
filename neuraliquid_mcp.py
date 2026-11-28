@@ -12,7 +12,7 @@ from mcp.types import ToolAnnotations
 
 from agent_purchase import buy_or_resume, load_state, purchase_readiness, state_path
 
-from handoff import ORIGIN, FEED, public_tags, checkout_link
+from handoff import ORIGIN, FEED, SNAPSHOT, public_tags, checkout_link
 from event_watch import WatchMarkets, run_watch, validate_markets
 server = FastMCP("NeuraLiquid Signals by FutureCast")
 READ_ONLY = ToolAnnotations(readOnlyHint=True, destructiveHint=False, idempotentHint=True, openWorldHint=True)
@@ -37,6 +37,33 @@ async def inspect_offer(handoff_url: str | None = None) -> dict:
     return {"resource": offer["resource"], "accepts": offer["accepts"],
             "quickstart": checkout_link(tags),
             "partners": ORIGIN + "/partners?" + urlencode(tags)}
+
+
+@server.tool(annotations=READ_ONLY)
+async def inspect_btc_eth_snapshot(handoff_url: str | None = None) -> dict:
+    """Check availability and the unsigned offer for one fixed BTC/ETH snapshot. Free."""
+    response = await fetch(SNAPSHOT, params=public_tags(handoff_url, resource=SNAPSHOT))
+    if response.status_code in (409, 503):
+        return {"status": "snapshot_unavailable", "http_status": response.status_code}
+    if response.status_code != 402:
+        raise ValueError(f"Unexpected offer response (HTTP {response.status_code}).")
+    offer = response.json()
+    return {"status": "available", "resource": offer["resource"], "accepts": offer["accepts"]}
+
+
+@server.tool(annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=True, idempotentHint=True, openWorldHint=True))
+async def buy_or_resume_btc_eth_snapshot(handoff_url: str | None = None) -> dict:
+    """Spend exactly 0.05 USDC once per operator-configured snapshot file or recover the same BTC/ETH observation set."""
+    path = state_path("NEURALIQUID_SNAPSHOT_FILE")
+    if os.getenv("NEURALIQUID_PASS_FILE") and path.resolve() == state_path().resolve():
+        raise ValueError("Configure separate private files for the snapshot and pass.")
+    try:
+        async with httpx.AsyncClient(base_url=ORIGIN, timeout=30, follow_redirects=False, trust_env=False) as http:
+            return await buy_or_resume(http, path, handoff_url, resource=SNAPSHOT)
+    except httpx.RequestError:
+        return {"status": "connection_interrupted", "next_tool": "buy_or_resume_btc_eth_snapshot"}
+    except Exception:
+        raise ValueError("Inspect the snapshot offer and check local opt-in, budget and wallet settings. Keep the snapshot file for recovery.") from None
 
 
 @server.tool(annotations=READ_ONLY)
@@ -69,9 +96,12 @@ def configured_token():
 
 
 @server.tool(annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, idempotentHint=True, openWorldHint=False))
-def check_purchase_readiness(wallet_mode: Literal["local", "external_x402"] = "local") -> dict:
-    """Check pass, wallet configuration and budget locally, without network, signing or spending. Wallet funds, pass validity and external policies are unverified."""
-    return purchase_readiness(wallet_mode)
+def check_purchase_readiness(
+    wallet_mode: Literal["local", "external_x402"] = "local",
+    product: Literal["day_pass", "btc_eth_snapshot"] = "day_pass",
+) -> dict:
+    """Check local wallet settings, budget and recovery state for a day pass or BTC/ETH snapshot. Actual funds and payment status require a separate check."""
+    return purchase_readiness(wallet_mode, product)
 
 
 @server.tool(annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=True, idempotentHint=True, openWorldHint=True))

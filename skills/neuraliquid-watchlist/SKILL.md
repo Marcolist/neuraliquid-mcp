@@ -1,11 +1,13 @@
 ---
 name: neuraliquid-watchlist
-description: Inspect NeuraLiquid crypto watchlist events for free using a historical example, buy or resume a budgeted day pass with MCP, and follow revisioned live observations with a cursor.
+description: Inspect NeuraLiquid crypto watchlist events for free using a historical example, buy one BTC/ETH snapshot or a budgeted day pass with MCP, and follow revisioned live observations with a cursor.
 ---
 
 # NeuraLiquid watchlist
 
 FutureCast operates this paid feed. To evaluate it, use an ordinary, unsigned HTTP client. Read [feed status](https://futurecast.ml85.xyz/api/v1/signals/metadata) and the [current x402 offer](https://futurecast.ml85.xyz/api/v1/x402/signals/patterns?utm_source=watchlist-skill). HTTP 402 is the expected offer response. A healthy feed may be empty.
+
+For one BTC/ETH observation set, inspect the [single-snapshot offer](https://futurecast.ml85.xyz/api/v1/x402/signals/btc-eth-snapshot?utm_source=watchlist-skill) or call `inspect_btc_eth_snapshot`. Review the merchant and exact 0.05 USDC on Base before purchase. If the operator approves, call `buy_or_resume_btc_eth_snapshot` with a dedicated private snapshot file. Reuse that file on retry. After finality the same receipt retrieves the fixed result for 24 hours. If no eligible observation is available, wait for a later offer. A live day pass is a separate purchase.
 
 For an existing pass, send its access token as a bearer credential only to the fixed FutureCast HTTPS origin, with redirects disabled. Read the confirmed response’s `data.signals`. Route each observation by `token`, filter its `direction` for the requested alert, and compare its UTC `time` against the user's freshness window. Deduplicate on all three fields before notifying. Respect the 30-second minimum polling interval and the access expiry. Treat an empty array as a successful read.
 

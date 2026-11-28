@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "neuraliquid-mcp"
-version = "1.3.1"
-description = "Purchase or resume a budgeted NeuraLiquid pass and read versioned watchlist events"
+version = "1.4.0"
+description = "Buy a fixed BTC/ETH snapshot or a day pass and read watchlist events via x402"
 requires-python = ">=3.11"
 dependencies = ["mcp==1.30.0", "httpx==0.28.1", "x402[evm]==2.29.0", "eth-account==0.14.0"]
 
