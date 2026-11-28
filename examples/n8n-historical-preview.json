@@ -11,7 +11,7 @@
         0,
         0
       ],
-      "notes": "Run this workflow manually to inspect expired examples. The paid live feed is available separately at https://futurecast.ml85.xyz/quickstart?utm_source=fc07-workflows."
+      "notes": "Run manually to view expired examples. Each output includes a link to inspect the 0.05 USDC BTC/ETH snapshot offer and a separate link to the 5 USDC live pass. The workflow only fetches the free case studies."
     },
     {
       "parameters": {
@@ -72,6 +72,18 @@
               "id": "a92a4d1c-5e79-53e9-86b5-e75c40e821f7",
               "name": "time",
               "value": "={{ $json.observation.signal.time }}",
+              "type": "string"
+            },
+            {
+              "id": "45a9255f-8aad-4c55-b09d-b70d3c68c00e",
+              "name": "snapshot_terms",
+              "value": "0.05 USDC on Base for one fixed set of active BTC/ETH observations. Inspect the offer with an unsigned GET. A quiet window returns 409 with no payment request.",
+              "type": "string"
+            },
+            {
+              "id": "5aa95539-e8e1-4410-8fb4-3ea09c802b7a",
+              "name": "snapshot_offer_url",
+              "value": "https://futurecast.ml85.xyz/api/v1/x402/signals/btc-eth-snapshot?utm_source=fc07-workflows",
               "type": "string"
             },
             {

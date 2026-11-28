@@ -22,7 +22,10 @@ Ask your agent to run `feed_status` and `inspect_offer`. Neither tool requires a
 
 ## Preview a watchlist before you buy
 
-In n8n Cloud or self-hosted n8n, download the [historical watchlist workflow JSON](https://raw.githubusercontent.com/Marcolist/neuraliquid-mcp/main/examples/n8n-historical-preview.json). Choose **Import from File**, then **Execute workflow**. The final node shows each expired example’s token, direction and detection time, plus the optional day-pass terms and `pilot_offer_url`. The workflow uses one public GET and requires no credentials. If you want 24 hours of live observations, open the returned URL to review the 5 USDC Base pass and approve it in your wallet. [Day-pass details](https://futurecast.ml85.xyz/quickstart?utm_source=fc07-workflows#wallet)
+In n8n Cloud or self-hosted n8n, choose **Import from File** and then **Execute workflow**. One free GET retrieves the expired examples. Each output shows the token, direction, UTC detection time and two optional next steps. [Download the historical watchlist workflow](https://raw.githubusercontent.com/Marcolist/neuraliquid-mcp/main/examples/n8n-historical-preview.json)
+
+- Open `snapshot_offer_url` with an unsigned GET to inspect the 0.05 USDC BTC/ETH snapshot. An active window returns an x402 quote. A quiet window returns HTTP 409. A separately approved payment buys one frozen observation set. [Snapshot details](https://futurecast.ml85.xyz/quickstart?utm_source=fc07-workflows#btc-eth-snapshot)
+- Open `pilot_offer_url` to review the 5 USDC pass for 24 hours of live observations. The n8n workflow needs no credentials and only displays these links. [Day-pass details](https://futurecast.ml85.xyz/quickstart?utm_source=fc07-workflows#wallet)
 
 Try this prompt in a connected MCP client:
 
@@ -76,5 +79,7 @@ Pass the public link copied from the card as `handoff_url` to `inspect_offer`. I
 For a free BTC/ETH availability watch, call `start_event_watch(markets="btc_eth", handoff_url=…)` and check `event_watch_status` every two minutes while the MCP server is running. On the first healthy snapshot with an unexpired, unconflicted BTC or ETH event and a day-pass offer, show the quote and returned public link to the operator. The watch ends within two hours and sends only unsigned requests. Closing the local MCP server ends its watch. For a scheduler, the installed command `neuraliquid-watch --markets btc_eth --handoff-url 'https://futurecast.ml85.xyz/preview'` runs the same watch as a standalone process, prints JSON and exits. Omit the markets option for the original all-market watch. Availability can change between the check and a paid read.
 
 For a one-day BTC/ETH comparison, record your existing alerts and call `read_btc_eth_watchlist` with an authorized pass. Retain the returned cursor, poll at least 30 seconds apart, upsert by event ID and revision, withdraw IDs listed in `withdraw`, and drop each alert at its expiry. On reset_required fetch a new snapshot and replace local state. Count distinct additional alerts alongside your existing feed over 24 hours. An empty set is a valid result.
+
+For a single observation set after the BTC/ETH watcher signals availability, pass its returned `handoff_url` to `inspect_btc_eth_snapshot`. This free MCP tool checks the current 0.05 USDC quote and preserves the partner and campaign tags on the link.
 
 A Forge operator using its own x402 signer can make the unsigned offer request and signed retry with the same tagged URL. Keep the canonical payment resource from the offer. Store the returned access token privately and provide it as `NEURALIQUID_ACCESS_TOKEN` to use the BTC/ETH reader. This path keeps signing inside the operator's wallet and prevents paying for each poll.
